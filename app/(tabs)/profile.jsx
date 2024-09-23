@@ -1,21 +1,29 @@
-import { View, Text, FlatList } from 'react-native'
+import { View, Text, FlatList, TouchableOpacity, Image } from 'react-native'
 import React, { useEffect } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import SearchInput from '../../components/SearchInput'
 import EmptyState from '../../components/EmptyState'
 import useAppwrite from '../../lib/useAppwrite'
-import { searchPosts } from '../../lib/appwrite'
+import { getUserPosts, searchPosts, signOut } from '../../lib/appwrite'
 import VideoCard from '../../components/VideoCard'
-import { useLocalSearchParams } from 'expo-router'
+import { router, useLocalSearchParams } from 'expo-router'
+
+import { useGlobalContext } from '../../context/GlobalProvider'
+import { icons } from '../../constants'
+import InfoBox from '../../components/InfoBox'
 
 const Profile = () => {
-  const { query } = useLocalSearchParams()
+  const { user, setUser, setIsLoggedIn } = useGlobalContext()
 
-  const { data: posts, refetch } = useAppwrite(() => searchPosts(query))
+  const { data: posts } = useAppwrite(() => getUserPosts(user.$id))
 
-  useEffect(() => {
-    refetch()
-  }, [query])
+  const logout = async () => {
+    await signOut()
+    setUser(null)
+    setIsLoggedIn(false)
+
+    router.replace('/sign-in')
+  }
 
   return (
     <SafeAreaView className="bg-primary h-full">
@@ -26,18 +34,40 @@ const Profile = () => {
           <VideoCard video={item}/>
         )}
         ListHeaderComponent={() => (
-          <View className="my-6 px-4">
-            <Text className="font-pmedium text-sm text-gray-100">Search Results</Text>
-            <Text className="text-2xl font-psemibold text-white">{query}</Text>
-            <View className="mt-6 mb-8">
-              <SearchInput initialQuery={query}/>
-            </View>
+          <View className='w-full justify-center items-center mt-6 mb-12 px-4'>
+              <TouchableOpacity
+                className='w-full items-end mb-10'
+                onPress={logout}
+              >
+                <Image source={icons.logout} resizeMode='contain' className='w-6 h-6'/>
+              </TouchableOpacity>
+              <View className='h-16 w-16 border border-secondary rounded-lg justify-center items-center'>
+                <Image source={{ uri: user?.avatar }} className='w-[90%] h-[90%] rounded-lg' resizeMode='cover'/>
+              </View>
+              <InfoBox 
+                title={user?.username}
+                containerStyles='mt-5'
+                titleStyles='text-lg'
+              />
+              <View className='mt-5 flex-row'>
+                <InfoBox 
+                  title={posts.length || 0}
+                  subtitle="Posts"
+                  containerStyles='mr-10'
+                  titleStyles='text-xl'
+                />
+                <InfoBox 
+                title="1.2k"
+                subtitle="Followers"
+                titleStyles='text-xl'
+              />
+              </View>
           </View>
         )}
         ListEmptyComponent={() => (
           <EmptyState 
             title="No Videos Found"
-            subtitle={`No videos found for ${query}`} />
+            subtitle={`No videos found for `} />
         )}
       />
     </SafeAreaView>

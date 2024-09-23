@@ -23,7 +23,7 @@ const SignIn = () => {
       Alert.alert('Error', 'Please fill in all the fields')
     }
 
-    setIsSumbitting(true)
+    setIsSubmitting(true)
     
     try {
       await signIn(

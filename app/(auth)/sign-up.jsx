@@ -25,7 +25,7 @@ const SignUp = () => {
       Alert.alert('Error', 'Please fill in all the fields')
     }
 
-    setIsSumbitting(true)
+    setIsSubmitting(true)
     
     try {
       const result = await createUser(
@@ -88,7 +88,7 @@ const SignUp = () => {
               href="sign-in"
               className='text-lg font-psemibold text-secondary-100'
             >
-              Sign Up
+              Sign In
             </Link>
           </View>
         </View>
